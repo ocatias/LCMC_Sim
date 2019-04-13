@@ -14,8 +14,8 @@ using namespace std;
 
 const int N = 300;
 //const double L = 10;
-const int TIMESTEPS = 5000000;
-const double DELTA_X = 1;
+const int TIMESTEPS = 1000000;
+const double DELTA_X = 0.3;
 
 const double R = 10;
 const double H = 10;
@@ -115,7 +115,7 @@ int main()
 
 	int counter = 0;
 
-	cout << "Placing " << N << " particles" << endl;
+	cout << "Placing " << N << " particles:" << endl;
 	int i {0};
 	while(i < N)
 	{
@@ -142,17 +142,19 @@ int main()
 		{
 			boxes[i] = newBox;
 			i++;
-			cout << i << " ";
+			cout << i << "\r" << flush;
 		}
 	}
 
 	writeStateToFile(fileIn);
 
-	cout << endl << "Starting MC" << endl;
+	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
 	for(int t = 1; t <= TIMESTEPS; t++)
 	{
 		if(t%1000 == 0)
-			cout << t << endl;
+		{
+			cout << t << "\r" << flush;
+		}
 
 		int n = rand() % (N);
 		vector3d translationVector (RandomMove::getRandomStep()*DELTA_X);
@@ -178,9 +180,12 @@ int main()
 			deniedRotations++;
 	}
 	writeStateToFile(fileOut);
-	cout << "Accepted Moves: " << acceptedMoves << "/" << to_string(acceptedMoves+deniedMoves) << endl;
-	cout << "Accepted Rotations: " << acceptedRotations << "/" << to_string(acceptedRotations+deniedRotations) << endl;
+	cout << endl;
+	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
+	cout << "Accepted Rotations: " << float(acceptedRotations)/(acceptedRotations+deniedRotations)*100 << "%" << endl;
 
+	//cout << acceptedMoves << "/" << acceptedMoves+deniedMoves << endl;
+	//cout << acceptedRotations << "/" << acceptedRotations+deniedRotations << endl;
 
 	fileIn.close();
 	fileOut.close();

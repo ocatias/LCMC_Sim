@@ -15,14 +15,14 @@ ostream& operator<<(ostream& os, const box& b)
 
 void box::updateEdges()
 {
-	edges[0] = center + base[0] + base[1] + base[2];
-	edges[1] = center + base[0] + base[1] - base[2];
-	edges[2] = center + base[0] - base[1] + base[2];
-	edges[3] = center + base[0] - base[1] - base[2];
-	edges[4] = center - base[0] + base[1] + base[2];
-	edges[5] = center - base[0] + base[1] - base[2];
-	edges[6] = center - base[0] - base[1] + base[2];
-	edges[7] = center - base[0] - base[1] - base[2];
+	edges[0] = center + halfRatio[0]*base[0] + halfRatio[1]*base[1] + halfRatio[2]*base[2];
+	edges[1] = center + halfRatio[0]*base[0] + halfRatio[1]*base[1] - halfRatio[2]*base[2];
+	edges[2] = center + halfRatio[0]*base[0] - halfRatio[1]*base[1] + halfRatio[2]*base[2];
+	edges[3] = center + halfRatio[0]*base[0] - halfRatio[1]*base[1] - halfRatio[2]*base[2];
+	edges[4] = center - halfRatio[0]*base[0] + halfRatio[1]*base[1] + halfRatio[2]*base[2];
+	edges[5] = center - halfRatio[0]*base[0] + halfRatio[1]*base[1] - halfRatio[2]*base[2];
+	edges[6] = center - halfRatio[0]*base[0] - halfRatio[1]*base[1] + halfRatio[2]*base[2];
+	edges[7] = center - halfRatio[0]*base[0] - halfRatio[1]*base[1] - halfRatio[2]*base[2];
 }
 
 void box::checkBase(vector3d baseVectors[3])
