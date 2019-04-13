@@ -9,12 +9,13 @@
 #include <math.h>
 #include <tuple>
 #include "RandomMove.h"
+#include <chrono>
 
 using namespace std;
 
 const int N = 300;
 //const double L = 10;
-const int TIMESTEPS = 1000000;
+const int TIMESTEPS = 10000000;
 const double DELTA_X = 0.3;
 
 const double R = 10;
@@ -104,9 +105,9 @@ int main()
 {
 	srand(2);
 	ofstream fileOut;
-	fileOut.open ("output.txt");
+	fileOut.open ("Output/output.txt");
 	ofstream fileIn;
-	fileIn.open ("input.txt");
+	fileIn.open ("Output/input.txt");
 
 	vector3d zeroVec(0, 0, 0);
 	vector3d up(0, 0, 1);
@@ -148,6 +149,8 @@ int main()
 
 	writeStateToFile(fileIn);
 
+	auto start = chrono::high_resolution_clock::now();
+
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
 	for(int t = 1; t <= TIMESTEPS; t++)
 	{
@@ -179,8 +182,12 @@ int main()
 		else
 			deniedRotations++;
 	}
+	auto stop = chrono::high_resolution_clock::now();
+	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
+
 	writeStateToFile(fileOut);
 	cout << endl;
+	cout << "Time for MC simulation " << duration.count() << " seconds" << endl;
 	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
 	cout << "Accepted Rotations: " << float(acceptedRotations)/(acceptedRotations+deniedRotations)*100 << "%" << endl;
 
