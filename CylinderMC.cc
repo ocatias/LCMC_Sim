@@ -1,5 +1,5 @@
-#ifndef TEST
-#define TEST
+#ifndef CYLINDER_MC
+#define CYLINDER_MC
 
 #include <iostream>
 #include "vector3d.h"
@@ -13,10 +13,11 @@
 
 using namespace std;
 
-const int N = 24;
-const int TIMESTEPS = 200000000;
-const double DELTA_X = 0.3;
-const double DELTA_ANGLE = 0.052;
+const int N = 27;
+const int TIMESTEPS = 10000000;
+const int LOGINTERVALL = TIMESTEPS/10;
+const double DELTA_X = 0.05;
+const double DELTA_ANGLE = 0.001;
 
 const double R = 8;
 const double H = 4.5;
@@ -38,7 +39,6 @@ void writeStateToFile(ostream &file, int timestep = 0)
 	{
 		file << boxes[i];
 	}
-	file << endl << endl;
 }
 
 bool isOutsideCylinder(box particle)
@@ -131,8 +131,7 @@ int main()
 	srand(3);
 	ofstream fileOut;
 	fileOut.open ("Output/output.txt");
-	ofstream fileIn;
-	fileIn.open ("Output/input.txt");
+	fileOut << N << endl;
 
 	vector3d zeroVec(0, 0, 0);
 	vector3d up(0, 0, 1);
@@ -174,7 +173,9 @@ int main()
 		}
 	}
 
-	writeStateToFile(fileIn);
+	//writeStateToFile(fileIn);
+	writeStateToFile(fileOut);
+
 
 	auto start = chrono::high_resolution_clock::now();
 
@@ -213,6 +214,11 @@ int main()
 		}
 		else
 			deniedRotations++;
+
+		if((t%LOGINTERVALL == 0) && (t != TIMESTEPS))
+		{
+			writeStateToFile(fileOut, t);
+		}
 	}
 	auto stop = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
@@ -226,7 +232,7 @@ int main()
 	//cout << acceptedMoves << "/" << acceptedMoves+deniedMoves << endl;
 	//cout << acceptedRotations << "/" << acceptedRotations+deniedRotations << endl;
 
-	fileIn.close();
+	//fileIn.close();
 	fileOut.close();
 	return 0;
 }
