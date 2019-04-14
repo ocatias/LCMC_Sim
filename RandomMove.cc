@@ -22,6 +22,30 @@ tuple<double, double, double, double> RandomMove::randomQuaternion()
 	return make_tuple(w, x, y, z);
 }
 
+//delta is the maximum of each individual rotation in percent
+tuple<double, double, double> RandomMove::randomEulerAngles(double delta)
+{
+	assert(!((delta > 1) ||(delta <= 0)));
+	return make_tuple(randf()*delta*2*M_PI, randf()*delta*2*M_PI, randf()*delta*2*M_PI);
+}
+
+vector3d RandomMove::rotateByEulerAngles(vector3d vec, double alpha, double beta, double gamma)
+{
+	return vector3d(
+		(cos(alpha)*cos(gamma) - sin(alpha)*cos(beta)*sin(gamma))*vec.x + (-cos(alpha)*sin(gamma) - sin(alpha)*cos(beta)*cos(gamma))*vec.y + sin(alpha)*sin(beta)*vec.z,
+		(sin(alpha)*cos(gamma) + cos(alpha)*cos(beta)*sin(gamma))*vec.x + (-sin(alpha)*sin(gamma) + cos(alpha)*cos(beta)*cos(gamma))*vec.y - cos(alpha)*sin(beta)*vec.z,
+		 sin(beta)*sin(gamma)*vec.x + sin(beta)*cos(gamma)*vec.y + cos(beta)*vec.z);
+}
+
+vector3d RandomMove::rotateByEulerAngles(vector3d vec, tuple<double, double, double> eulerAngles)
+{
+	double alpha = get<0>(eulerAngles);
+	double beta = get<1>(eulerAngles);
+	double gamma = get<2>(eulerAngles);
+	return rotateByEulerAngles(vec, alpha, beta, gamma);
+}
+
+
 vector3d RandomMove::getRandomStep()
 {
 	double theta =  M_PI*randf();

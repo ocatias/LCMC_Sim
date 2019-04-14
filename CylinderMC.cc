@@ -13,16 +13,16 @@
 
 using namespace std;
 
-const int N = 300;
-//const double L = 10;
-const int TIMESTEPS = 10000000;
+const int N = 24;
+const int TIMESTEPS = 200000000;
 const double DELTA_X = 0.3;
+const double DELTA_ANGLE = 0.052;
 
-const double R = 10;
-const double H = 10;
+const double R = 8;
+const double H = 4.5;
 
-double w = 0.5;
-double l = 2;
+double w = 1;
+double l = 4;
 double h = 2;
 
 int acceptedMoves = 0;
@@ -31,9 +31,9 @@ int acceptedRotations = 0;
 int deniedRotations = 0;
 box boxes[N];
 
-void writeStateToFile(ostream &file)
+void writeStateToFile(ostream &file, int timestep = 0)
 {
-
+	file << "cylinder, " << R << ", " << H << ", T =" << timestep <<  endl;
 	for( int i = 0; i <= N-1; i++)
 	{
 		file << boxes[i];
@@ -43,6 +43,7 @@ void writeStateToFile(ostream &file)
 
 bool isOutsideCylinder(box particle)
 {
+	particle.updateEdges();
 	for(int i = 0; i < 8; i++)
 	{
 		if(sqrt(particle.edges[i].x*particle.edges[i].x + particle.edges[i].z*particle.edges[i].z) > R
@@ -78,6 +79,30 @@ bool tryMove(int particleNr, vector3d translationVector)
 	return true;
 }
 
+bool tryRotate(int particleNr, tuple<double, double, double> eulerAngles)
+{
+	box trialBox(boxes[particleNr].center,
+		boxes[particleNr].halfRatio[0], boxes[particleNr].halfRatio[1], boxes[particleNr].halfRatio[2],
+		RandomMove::rotateByEulerAngles(boxes[particleNr].base[0], eulerAngles),
+		RandomMove::rotateByEulerAngles(boxes[particleNr].base[1], eulerAngles),
+		RandomMove::rotateByEulerAngles(boxes[particleNr].base[2], eulerAngles));
+	trialBox.updateEdges();
+
+	if(isOutsideCylinder(trialBox))
+			return false;
+
+	for(int i = 0; i < N; i++)
+	{
+		if (i == particleNr)
+			continue;
+
+		if (BoxCollision::isColliding(trialBox, boxes[i]))
+			return false;
+	}
+	return true;
+}
+
+
 bool tryRotate(int particleNr, tuple<double, double, double, double> quaternion)
 {
 	box trialBox(boxes[particleNr].center,
@@ -103,7 +128,7 @@ bool tryRotate(int particleNr, tuple<double, double, double, double> quaternion)
 
 int main()
 {
-	srand(2);
+	srand(3);
 	ofstream fileOut;
 	fileOut.open ("Output/output.txt");
 	ofstream fileIn;
@@ -115,6 +140,8 @@ int main()
 	vector3d right(1, 0, 0);
 
 	int counter = 0;
+	cout << "Cylinder:  R = " << R << ", H = " << H << ", V = " << R*R*M_PI << endl;
+	cout << "Density " << N*w*l*h/(R*R*H*M_PI)*100.0 << "%" << endl;
 
 	cout << "Placing " << N << " particles:" << endl;
 	int i {0};
@@ -143,7 +170,7 @@ int main()
 		{
 			boxes[i] = newBox;
 			i++;
-			cout << i << "\r" << flush;
+			cout << i << flush << "\r";
 		}
 	}
 
@@ -154,9 +181,9 @@ int main()
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
 	for(int t = 1; t <= TIMESTEPS; t++)
 	{
-		if(t%1000 == 0)
+		if(t%10000 == 0)
 		{
-			cout << t << "\r" << flush;
+			cout << "% "<< float(t)/TIMESTEPS*100 << flush <<"\r" << "                  " << "\r";
 		}
 
 		int n = rand() % (N);
@@ -170,12 +197,17 @@ int main()
 			deniedMoves++;
 
 		int n2 = rand() % (N);
-		tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion()};
-		if (tryRotate(n2, quaternion))
+		//tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion()};
+		tuple<double, double, double> eulerAngles {RandomMove::randomEulerAngles(DELTA_ANGLE)};
+		if (tryRotate(n2, eulerAngles))
 		{
-			boxes[n2].base[0] = RandomMove::rotateByQuaternion(boxes[n2].base[0], quaternion).normalize();
-			boxes[n2].base[1] = RandomMove::rotateByQuaternion(boxes[n2].base[1], quaternion).normalize();
-			boxes[n2].base[2] = RandomMove::rotateByQuaternion(boxes[n2].base[2], quaternion).normalize();
+			//boxes[n2].base[0] = RandomMove::rotateByQuaternion(boxes[n2].base[0], quaternion).normalize();
+			//boxes[n2].base[1] = RandomMove::rotateByQuaternion(boxes[n2].base[1], quaternion).normalize();
+			//boxes[n2].base[2] = RandomMove::rotateByQuaternion(boxes[n2].base[2], quaternion).normalize();
+			boxes[n2].base[0] = RandomMove::rotateByEulerAngles(boxes[n2].base[0], eulerAngles).normalize();
+			boxes[n2].base[1] = RandomMove::rotateByEulerAngles(boxes[n2].base[1], eulerAngles).normalize();
+			boxes[n2].base[2] = RandomMove::rotateByEulerAngles(boxes[n2].base[2], eulerAngles).normalize();
+
 			boxes[n2].updateEdges();
 			acceptedRotations++;
 		}
@@ -185,7 +217,7 @@ int main()
 	auto stop = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
 
-	writeStateToFile(fileOut);
+	writeStateToFile(fileOut, TIMESTEPS);
 	cout << endl;
 	cout << "Time for MC simulation " << duration.count() << " seconds" << endl;
 	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
