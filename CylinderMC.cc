@@ -15,18 +15,20 @@
 
 using namespace std;
 
-const int N = 26;
-const int TIMESTEPS = 10000000;
+const int N = 42;
+const int TIMESTEPS = 50000000;
 const int LOGINTERVALL = TIMESTEPS/10;
 const double DELTA_X = 0.05;
 const double DELTA_ANGLE = 0.001;
 
-const double R = 8;
-const double H = 4.5;
+const double R = 5;
+const double H = 5;
 
-double w = 1;
-double l = 2;
-double h = 4;
+double w = 0.5;
+double h = 1;
+double l = 1;
+
+const int relevantBaseIndex = 0;
 
 int acceptedMoves = 0;
 int deniedMoves = 0;
@@ -34,11 +36,9 @@ int acceptedRotations = 0;
 int deniedRotations = 0;
 box boxes[N];
 
-double prevS = 0;
-
-void writeStateToFile(ostream &file, int timestep = 0, double S = 0, double deltaS = 0)
+void writeStateToFile(ostream &file, int timestep = 0, double S = 0, double deltaS = 0, double acceptedT = 0, double acceptedR = 0)
 {
-	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S << ", " << deltaS << endl;
+	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S << ", " << deltaS << ", " << acceptedT << ", " << acceptedR << endl;
 	for( int i = 0; i <= N-1; i++)
 	{
 		file << boxes[i];
@@ -135,7 +135,7 @@ int main()
 	srand(3);
 	ofstream fileOut;
 	fileOut.open ("Output/output.txt");
-	fileOut << N << endl;
+	fileOut << N << ", " << relevantBaseIndex << endl;
 
 	vector3d zeroVec(0, 0, 0);
 	vector3d up(0, 0, 1);
@@ -177,12 +177,15 @@ int main()
 		}
 	}
 
-	//writeStateToFile(fileIn);
-	writeStateToFile(fileOut);
+	double prevS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
+	writeStateToFile(fileOut, 0, prevS, 0);
 
+	int currAcceptedTranslations = 0;
+	int currAcceptedRotations = 0;
+	int currDeniedTranslations = 0;
+	int currDeniedRotations = 0;
 
 	auto start = chrono::high_resolution_clock::now();
-
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
 	for(int t = 1; t <= TIMESTEPS; t++)
 	{
@@ -197,9 +200,13 @@ int main()
 		{
 			boxes[n].translate(translationVector);
 			acceptedMoves++;
+			currAcceptedTranslations++;
 		}
 		else
+		{
 			deniedMoves++;
+			currDeniedTranslations++;
+		}
 
 		int n2 = rand() % (N);
 		//tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion()};
@@ -215,24 +222,32 @@ int main()
 
 			boxes[n2].updateEdges();
 			acceptedRotations++;
+			currAcceptedRotations++;
 		}
 		else
+		{
 			deniedRotations++;
+			currDeniedRotations++;
+		}
 
 		if((t%LOGINTERVALL == 0) && (t != TIMESTEPS))
 		{
-			double currS = Statistics::orderParameter(boxes, N, 2);
+			double currS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
 			cout << std::left <<  "S = " << std::setw(20) << currS;
 			cout  << "ΔS = " << currS-prevS  << endl ;
-			writeStateToFile(fileOut, t, currS, currS-prevS);
+			writeStateToFile(fileOut, t, currS, currS-prevS,
+				double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
+				double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 			prevS = currS;
 		}
 	}
 	auto stop = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
 
-	double currS = Statistics::orderParameter(boxes, N, 2);
-	writeStateToFile(fileOut, TIMESTEPS, currS, currS-prevS);
+	double currS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
+	writeStateToFile(fileOut, TIMESTEPS, currS, currS-prevS,
+		double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
+		double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 	cout << endl;
 	cout << "Time for MC simulation " << duration.count() << " seconds" << endl;
 	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
