@@ -51,6 +51,18 @@ vector3d operator+(const vector3d& a, const vector3d& b)
 	return c;
 }
 
+double vector3d::operator[](int i)
+{
+	assert(!((i > 2) || (i < 0)));
+	if(i == 0)
+		return x;
+	else if(i == 1)
+		return y;
+	else if(i == 2)
+		return z;
+}
+
+
 bool operator==(const vector3d& lhs, const vector3d& rhs)
 {
 	double epsilon = 0.00001;

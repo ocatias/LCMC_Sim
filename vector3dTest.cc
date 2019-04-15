@@ -81,5 +81,12 @@ int main()
     assert(vector3d() == zero);
   cout << "Check" << endl;
 
+  cout << "Subscript [] operator: ";
+    assert(a2[0] == 1);
+    assert(a2[1] == 2);
+    assert(a2[2] == 3);
+    assert(c[0] == -1.1);
+  cout << "Check" << endl;
+
   cout << "TEST COMPLETED SUCCESSFULLY" << endl;
 }

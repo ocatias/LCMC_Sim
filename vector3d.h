@@ -2,6 +2,7 @@
 #define VECTOR_3D
 #include <iostream>
 #include <cmath>
+#include <assert.h>
 
 using namespace std;
 
@@ -22,6 +23,7 @@ class vector3d {
 		friend vector3d operator%(const vector3d& a, const vector3d& b);
 		friend bool operator==(const vector3d& lhs, const vector3d& rhs);
 		friend bool operator!=(const vector3d& lhs, const vector3d& rhs);
+		double operator[](int i);
 		vector3d normalize(double r = 1);
 		double length();
 };

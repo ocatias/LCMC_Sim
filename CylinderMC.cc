@@ -10,10 +10,12 @@
 #include <tuple>
 #include "RandomMove.h"
 #include <chrono>
+#include "Statistics.h"
+#include <iomanip>
 
 using namespace std;
 
-const int N = 27;
+const int N = 26;
 const int TIMESTEPS = 10000000;
 const int LOGINTERVALL = TIMESTEPS/10;
 const double DELTA_X = 0.05;
@@ -23,8 +25,8 @@ const double R = 8;
 const double H = 4.5;
 
 double w = 1;
-double l = 4;
-double h = 2;
+double l = 2;
+double h = 4;
 
 int acceptedMoves = 0;
 int deniedMoves = 0;
@@ -32,9 +34,11 @@ int acceptedRotations = 0;
 int deniedRotations = 0;
 box boxes[N];
 
-void writeStateToFile(ostream &file, int timestep = 0)
+double prevS = 0;
+
+void writeStateToFile(ostream &file, int timestep = 0, double S = 0, double deltaS = 0)
 {
-	file << "cylinder, " << R << ", " << H << ", T =" << timestep <<  endl;
+	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S << ", " << deltaS << endl;
 	for( int i = 0; i <= N-1; i++)
 	{
 		file << boxes[i];
@@ -217,13 +221,18 @@ int main()
 
 		if((t%LOGINTERVALL == 0) && (t != TIMESTEPS))
 		{
-			writeStateToFile(fileOut, t);
+			double currS = Statistics::orderParameter(boxes, N, 2);
+			cout << std::left <<  "S = " << std::setw(20) << currS;
+			cout  << "ΔS = " << currS-prevS  << endl ;
+			writeStateToFile(fileOut, t, currS, currS-prevS);
+			prevS = currS;
 		}
 	}
 	auto stop = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
 
-	writeStateToFile(fileOut, TIMESTEPS);
+	double currS = Statistics::orderParameter(boxes, N, 2);
+	writeStateToFile(fileOut, TIMESTEPS, currS, currS-prevS);
 	cout << endl;
 	cout << "Time for MC simulation " << duration.count() << " seconds" << endl;
 	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
