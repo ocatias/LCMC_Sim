@@ -15,20 +15,20 @@
 
 using namespace std;
 
-const int N = 42;
-const int TIMESTEPS = 50000000;
-const int LOGINTERVALL = TIMESTEPS/10;
-const double DELTA_X = 0.05;
+const int N = 500;
+const int TIMESTEPS = 9000000;
+const int LOGINTERVALL = TIMESTEPS/20;
+const double DELTA_X = 0.1;
 const double DELTA_ANGLE = 0.001;
 
-const double R = 5;
-const double H = 5;
+const double R = 30;
+const double H = 5.5;
 
-double w = 0.5;
-double h = 1;
-double l = 1;
+double w = 1;
+double l = 4;
+double h = 2;
 
-const int relevantBaseIndex = 0;
+const int relevantBaseIndex = 1;
 
 int acceptedMoves = 0;
 int deniedMoves = 0;
@@ -150,6 +150,7 @@ int main()
 	int i {0};
 	while(i < N)
 	{
+		/*
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
 		double x {cos(phi)*radius};
@@ -161,6 +162,14 @@ int main()
 		newBox.base[0] = RandomMove::rotateByQuaternion(newBox.base[0], quaternion).normalize();
 		newBox.base[1] = RandomMove::rotateByQuaternion(newBox.base[1], quaternion).normalize();
 		newBox.base[2] = RandomMove::rotateByQuaternion(newBox.base[2], quaternion).normalize();
+		*/
+
+		double phi {RandomMove::randf()*2*M_PI};
+		double radius {RandomMove::randf()*R};
+		double x {cos(phi)*radius};
+		double z {sin(phi)*radius};
+		box newBox (zeroVec + right*x + up*z, w/2, l/2, h/2, right, forward, up);
+
 
 		bool isAllowed = true;
 		for(int j = 0; j < i; j++)
@@ -187,6 +196,7 @@ int main()
 
 	auto start = chrono::high_resolution_clock::now();
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
+	cout << "Delta X = " << DELTA_X << ", Delta Angle = " << DELTA_ANGLE << endl;
 	for(int t = 1; t <= TIMESTEPS; t++)
 	{
 		if(t%10000 == 0)
@@ -233,8 +243,10 @@ int main()
 		if((t%LOGINTERVALL == 0) && (t != TIMESTEPS))
 		{
 			double currS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
-			cout << std::left <<  "S = " << std::setw(20) << currS;
-			cout  << "ΔS = " << currS-prevS  << endl ;
+			cout << std::left <<  "S = " << std::setw(12) << currS
+			 	<< "ΔS = " << std::setw(13) << currS-prevS
+				<< "T% = " << std::setw(9) << double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100
+				<< "R% = " << std::setw(9) << double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100 << endl;
 			writeStateToFile(fileOut, t, currS, currS-prevS,
 				double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
 				double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);

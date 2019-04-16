@@ -21,7 +21,6 @@ int main()
   box cubeUp(up, right, forward, up);
   box cubeRight(right, 10, 10, 10, right, forward, up);
   box cubeDown(-1*up, right, forward, up);
-  cout << cubeCenter << cubeRight << cubeDown;
 
   cout << "BOX COLLISION TEST" << endl;
     assert(BoxCollision::isColliding(cubeCenter, cubeCenter) == true);

@@ -29,6 +29,10 @@ bool BoxCollision::isColliding(box box1, box box2)
 	vector3d base1[3] = box1.base;
 	vector3d base2[3] = box2.base;
 	vector3d T (box1.center - box2.center);
+
+	if(T.length() > sqrt(4*box1.halfRatio[0]*box1.halfRatio[0] + 4*box1.halfRatio[1]*box1.halfRatio[1] + 4*box1.halfRatio[2]*box1.halfRatio[2]))
+		return false;
+
 	vector3d scaledBase1[3] {get<0>(box1.getScaledBase()), get<1>(box1.getScaledBase()), get<2>(box1.getScaledBase())};
 	vector3d scaledBase2[3] {get<0>(box2.getScaledBase()), get<1>(box2.getScaledBase()), get<2>(box2.getScaledBase())};
 	return !(
