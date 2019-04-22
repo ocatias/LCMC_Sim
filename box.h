@@ -11,8 +11,9 @@ using namespace std;
 
 class box {
 	private:
-		void checkBase(vector3d baseVectors[3]);
 	public:
+		void checkBase();
+
 		vector3d center;
 		vector3d base[3];
 		vector3d edges[8];

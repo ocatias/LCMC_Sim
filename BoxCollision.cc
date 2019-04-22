@@ -16,7 +16,7 @@ bool BoxCollision::checkProjection(vector3d T, vector3d L, vector3d scaledBase1[
 	//<< to_string(scaledBase1) << to_string(scaledBase2)
 	//cout << "In " << T << L << endl;
 	//cout << to_string(abs(T*L)) << ", " << to_string(projection1) << ", " << to_string(projection2) << endl;
-	return abs(T*L) > (projection1 + projection2);
+	return abs(T*L) > ((projection1 + projection2) + 0.000001);
 }
 
 //Returns true if the boxes are colliding
@@ -36,13 +36,19 @@ bool BoxCollision::isColliding(box box1, box box2)
 	vector3d scaledBase1[3] {get<0>(box1.getScaledBase()), get<1>(box1.getScaledBase()), get<2>(box1.getScaledBase())};
 	vector3d scaledBase2[3] {get<0>(box2.getScaledBase()), get<1>(box2.getScaledBase()), get<2>(box2.getScaledBase())};
 	return !(
-		checkProjection(T, base1[0], scaledBase1, scaledBase2) || checkProjection(T, base1[1], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[2], scaledBase1, scaledBase2) || checkProjection(T, base2[0], scaledBase1, scaledBase2) ||
-		checkProjection(T, base2[1], scaledBase1, scaledBase2) || checkProjection(T, base2[2], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[0]%base2[0], scaledBase1, scaledBase2) || checkProjection(T, base1[0]%base2[1], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[0]%base2[2], scaledBase1, scaledBase2) || checkProjection(T, base1[1]%base2[0], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[1]%base2[1], scaledBase1, scaledBase2) || checkProjection(T, base1[1]%base2[2], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[2]%base2[0], scaledBase1, scaledBase2) || checkProjection(T, base1[2]%base2[1], scaledBase1, scaledBase2) ||
-		checkProjection(T, base1[2]%base2[2], scaledBase1, scaledBase2)
-	);
+		checkProjection(T, base1[0], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[1], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[2], scaledBase1, scaledBase2) ||
+		checkProjection(T, base2[0], scaledBase1, scaledBase2) ||
+		checkProjection(T, base2[1], scaledBase1, scaledBase2) ||
+		checkProjection(T, base2[2], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[0]%base2[0], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[0]%base2[1], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[0]%base2[2], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[1]%base2[0], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[1]%base2[1], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[1]%base2[2], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[2]%base2[0], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[2]%base2[1], scaledBase1, scaledBase2) ||
+		checkProjection(T, base1[2]%base2[2], scaledBase1, scaledBase2));
 }

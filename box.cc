@@ -25,17 +25,20 @@ void box::updateEdges()
 	edges[7] = center - halfRatio[0]*base[0] - halfRatio[1]*base[1] - halfRatio[2]*base[2];
 }
 
-void box::checkBase(vector3d baseVectors[3])
+void box::checkBase()
 {
-	/*
-	if ((baseVectors[0] * baseVectors[1] != 0) || (baseVectors[1] * baseVectors[2] != 0) || (baseVectors[2] * baseVectors[0] != 0))
+
+	if ((base[0] * base[1] != 0) || (base[1] * base[2] != 0) || (base[2] * base[0] != 0))
 	{
-		cout << "BASE IS NOT ORTHOGONAL: " << (baseVectors[0] * baseVectors[1]) << ", " << (baseVectors[1] * baseVectors[2]) << ", " << (baseVectors[2] * baseVectors[0])<<endl;
-		cout << baseVectors[0] << ", " << baseVectors[1] << ", " << baseVectors[2] << endl;
+		//cout << "BASE IS NOT ORTHOGONAL: " << (base[0] * base[1]) << ", " << (base[1] * base[2]) << ", " << (base[2] * base[0])<<endl;
+		base[0] = base[0].normalize();
+		base[1] = base[1] - (base[0]*base[1])*base[0];
+		base[1] = base[1].normalize();
+		base[2] = base[2] - (base[0]*base[2])*base[0] - (base[1]*base[2])*base[1];
+		base[2] = base[2].normalize();
 	}
-	*/
 		//throw invalid_argument( "Base is not orthogonal" );
-	if ((baseVectors[0].length() != 1) || (baseVectors[1].length() != 1) || (baseVectors[2].length() != 1))
+	if ((base[0].length() != 1) || (base[1].length() != 1) || (base[2].length() != 1))
 	{
 		base[0] = base[0].normalize();
 		base[1] = base[1].normalize();
@@ -47,8 +50,6 @@ void box::checkBase(vector3d baseVectors[3])
 
 box::box(vector3d c, double r1, double r2, double r3, vector3d b1, vector3d b2, vector3d b3)
 {
-	//cout << "Full constructor";
-	//cout << c << ", " << to_string(r1) << ", " << to_string(r2) << ", " << to_string(r3) << ", " << b1 << ", " << b2 << ", " << b3 << endl;
 	center = c;
 	halfRatio[0] = r1;
 	halfRatio[1] = r2;
@@ -56,9 +57,8 @@ box::box(vector3d c, double r1, double r2, double r3, vector3d b1, vector3d b2, 
 	base[0] = b1.normalize();
 	base[1] = b2.normalize();
 	base[2] = b3.normalize();
-	checkBase(base);
+	checkBase();
 	updateEdges();
-	//cout << endl << b1.normalize() << base[1] << endl;
 }
 
 box::box()
@@ -70,7 +70,7 @@ box::box()
 	base[0] = vector3d(1,0,0);
 	base[1] = vector3d(0,1,0);
 	base[2] = vector3d(0,0,1);
-	checkBase(base);
+	checkBase();
 	updateEdges();
 }
 
@@ -84,7 +84,7 @@ box::box(vector3d c, vector3d b1, vector3d b2, vector3d b3)
 	base[0] = b1.normalize();
 	base[1] = b2.normalize();
 	base[2] = b3.normalize();
-	checkBase(base);
+	checkBase();
 	updateEdges();
 }
 

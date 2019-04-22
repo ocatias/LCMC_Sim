@@ -5,9 +5,10 @@
 #include "vector3d.h"
 #include "box.h"
 #include <fstream>
-#include <math.h>
+#include <cmath>
 #include <tuple>
 #include <assert.h>
+#include <random>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ class RandomMove
 {
 	public:
 		static double randf();
-		static tuple<double, double, double, double> randomQuaternion();
+		static tuple<double, double, double, double> randomQuaternion(double delta = 1);
 		static vector3d getRandomStep();
 		static tuple<double, double, double, double> hamiltonProduct(tuple<double, double, double, double> a, tuple<double, double, double, double> b);
 		static vector3d rotateByQuaternion(vector3d inputVector, tuple<double, double, double, double> leftQuaternion);
