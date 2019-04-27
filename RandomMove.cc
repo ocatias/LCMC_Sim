@@ -11,6 +11,7 @@ tuple<double, double, double, double> RandomMove::randomQuaternion(double delta)
 	//if(delta > 1)
 	//	delta = 1;
 
+	/*
 	std::random_device rd{};
   std::mt19937 gen{rd()};
 
@@ -23,12 +24,12 @@ tuple<double, double, double, double> RandomMove::randomQuaternion(double delta)
 	double w = d(gen);
 	double l = sqrt(w*w + x*x + y*y + z*z);
 	return make_tuple(w/l, x/l, y/l, z/l);
+	*/
 
-	/*
-	double s = randf();
+	double s = randf()*delta;
 	double sigma1 = sqrt(1-s);
 	double sigma2 = sqrt(s);
-	double theta1 = 2*M_PI*randf()*delta;
+	double theta1 = 2*M_PI*randf();
 	double theta2 = 2*M_PI*randf()*delta;
 	double w = cos(theta2)*sigma2;
 	double x = sin(theta1)*sigma1;
@@ -37,7 +38,6 @@ tuple<double, double, double, double> RandomMove::randomQuaternion(double delta)
 	//cout << w << ", " << x << ", " << y << ", " << z << endl;
 	//cout << "Quaternion size = " << to_string(sqrt(w*w + x*x + y*y + z*z)) << endl;
 	return make_tuple(w, x, y, z);
-	*/
 }
 
 //delta is the maximum of each individual rotation in percent
@@ -85,10 +85,19 @@ vector3d RandomMove::rotateByEulerAngles(vector3d vec, tuple<double, double, dou
 
 vector3d RandomMove::getRandomStep()
 {
-	double theta =  M_PI*randf();
-	double phi =  2*M_PI*randf();
-	vector3d step(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
-	return step;
+	double x, y, z, length;
+	do {
+		x = (RandomMove::randf() - 0.5)*2;
+		y = (RandomMove::randf() - 0.5)*2;
+		z = (RandomMove::randf() - 0.5)*2;
+		length = sqrt(x*x + y*y + z*z);
+	} while(length > 1);
+
+	x /= length;
+	y /= length;
+	z /= length;
+
+	return vector3d(x, y, z);
 }
 
 tuple<double, double, double, double> RandomMove::hamiltonProduct(tuple<double, double, double, double> a, tuple<double, double, double, double> b)

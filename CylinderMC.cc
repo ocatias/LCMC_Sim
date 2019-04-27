@@ -12,21 +12,24 @@
 #include <chrono>
 #include "Statistics.h"
 #include <iomanip>
+#include <fstream>
+#include <valarray>
 
 using namespace std;
 
-const int N = 500;
-const int TIMESTEPS = 9000000;
-const int LOGINTERVALL = TIMESTEPS/20;
-const double DELTA_X = 0.1;
-const double DELTA_ANGLE = 0.001;
+int N;
+unsigned long long TIMESTEPS = 10000000000;
+unsigned long long LOGINTERVALL = TIMESTEPS/30;
+const double DELTA_X = 0.3;
+const double DELTA_ANGLE = 0.0000001;
+const int UPDATEINTERVALL = 10000000;
 
-const double R = 30;
-const double H = 5.5;
+const double R = 45;
+const double H = 15;
 
-double w = 1;
-double l = 4;
-double h = 2;
+double w = 5;
+double l = 12;
+double h = 1;
 
 const int relevantBaseIndex = 1;
 
@@ -34,11 +37,12 @@ int acceptedMoves = 0;
 int deniedMoves = 0;
 int acceptedRotations = 0;
 int deniedRotations = 0;
-box boxes[N];
+box *boxes;
 
-void writeStateToFile(ostream &file, int timestep = 0, double S = 0, double deltaS = 0, double acceptedT = 0, double acceptedR = 0)
+void writeStateToFile(ostream &file, int timestep = 0, valarray<double> S = {0, 0, 0}, valarray<double> B = {0, 0, 0}, valarray<double> deltaS = {0, 0, 0}, double acceptedT = 0, double acceptedR = 0)
 {
-	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S << ", " << deltaS << ", " << acceptedT << ", " << acceptedR << endl;
+	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S[0] << ", " << S[1] << ", " << S[2] << ", " << B[0] << ", " << B[1] << ", " << B[2] <<  ", " << deltaS[0] << ", " << deltaS[1] << ", " << deltaS[2] << ", ";
+	file << acceptedT << ", " << acceptedR << endl;
 	for( int i = 0; i <= N-1; i++)
 	{
 		file << boxes[i];
@@ -68,7 +72,7 @@ bool tryMove(int particleNr, vector3d translationVector)
 
 	for(int i = 0; i < 8; i++)
 	{
-		if(trialBox.edges[i].y > 5 || trialBox.edges[i].y < -5)
+		if(trialBox.edges[i].y > H/2 || trialBox.edges[i].y < -H/2)
 			cout << "ERROR";
 	}
 
@@ -130,11 +134,26 @@ bool tryRotate(int particleNr, tuple<double, double, double, double> quaternion)
 	return true;
 }
 
-int main()
+int main(int argc, char** argv)
 {
 	srand(3);
 	ofstream fileOut;
-	fileOut.open ("Output/output.txt");
+	//fileOut.open ("Output/output.txt");
+
+	string fileName = argv[1];
+	int j = 2;
+
+	while(FILE *file = fopen(("Output/"+fileName+".txt").c_str(), "r"))
+	{
+		fclose(file);
+		fileName = argv[1] + to_string(j);
+		j++;
+	}
+	fileOut.open ("Output/"+fileName+".txt");
+
+	N = stoi(argv[2]);
+	boxes = new box[N];
+
 	fileOut << N << ", " << relevantBaseIndex << endl;
 
 	vector3d zeroVec(0, 0, 0);
@@ -150,19 +169,21 @@ int main()
 	int i {0};
 	while(i < N)
 	{
-		/*
+
+/*
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
 		double x {cos(phi)*radius};
 		double z {sin(phi)*radius};
 		double y {RandomMove::randf()*H - H/2};
-		box newBox (zeroVec + right*x + up*z + forward*y, w/2, h/2, l/2, right, forward, up);
+		box newBox (zeroVec + right*x + up*z + forward*y, w/2, l/2, h/2, right, forward, up);
 
 		tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion()};
 		newBox.base[0] = RandomMove::rotateByQuaternion(newBox.base[0], quaternion).normalize();
 		newBox.base[1] = RandomMove::rotateByQuaternion(newBox.base[1], quaternion).normalize();
 		newBox.base[2] = RandomMove::rotateByQuaternion(newBox.base[2], quaternion).normalize();
-		*/
+*/
+
 
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
@@ -186,8 +207,9 @@ int main()
 		}
 	}
 
-	double prevS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
-	writeStateToFile(fileOut, 0, prevS, 0);
+	auto[prevS, _currB] = Statistics::orderParameter(boxes, N);
+
+	writeStateToFile(fileOut, 0, prevS, _currB, {0,0,0});
 
 	int currAcceptedTranslations = 0;
 	int currAcceptedRotations = 0;
@@ -197,9 +219,10 @@ int main()
 	auto start = chrono::high_resolution_clock::now();
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
 	cout << "Delta X = " << DELTA_X << ", Delta Angle = " << DELTA_ANGLE << endl;
-	for(int t = 1; t <= TIMESTEPS; t++)
+	cout << "S = " << prevS[0] << ", " << prevS[1] << ", " << prevS[2] << endl;
+	for(unsigned long long t = 1; t <= TIMESTEPS; t++)
 	{
-		if(t%10000 == 0)
+		if(t%UPDATEINTERVALL == 0)
 		{
 			cout << "% "<< float(t)/TIMESTEPS*100 << flush <<"\r" << "                  " << "\r";
 		}
@@ -219,16 +242,16 @@ int main()
 		}
 
 		int n2 = rand() % (N);
-		//tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion()};
-		tuple<double, double, double> eulerAngles {RandomMove::randomEulerAngles(DELTA_ANGLE)};
-		if (tryRotate(n2, eulerAngles))
+		tuple<double, double, double, double> quaternion {RandomMove::randomQuaternion(DELTA_ANGLE)};
+		//tuple<double, double, double> eulerAngles {RandomMove::randomEulerAngles(DELTA_ANGLE)};
+		if (tryRotate(n2, quaternion))
 		{
-			//boxes[n2].base[0] = RandomMove::rotateByQuaternion(boxes[n2].base[0], quaternion).normalize();
-			//boxes[n2].base[1] = RandomMove::rotateByQuaternion(boxes[n2].base[1], quaternion).normalize();
-			//boxes[n2].base[2] = RandomMove::rotateByQuaternion(boxes[n2].base[2], quaternion).normalize();
-			boxes[n2].base[0] = RandomMove::rotateByEulerAngles(boxes[n2].base[0], eulerAngles).normalize();
-			boxes[n2].base[1] = RandomMove::rotateByEulerAngles(boxes[n2].base[1], eulerAngles).normalize();
-			boxes[n2].base[2] = RandomMove::rotateByEulerAngles(boxes[n2].base[2], eulerAngles).normalize();
+			boxes[n2].base[0] = RandomMove::rotateByQuaternion(boxes[n2].base[0], quaternion).normalize();
+			boxes[n2].base[1] = RandomMove::rotateByQuaternion(boxes[n2].base[1], quaternion).normalize();
+			boxes[n2].base[2] = RandomMove::rotateByQuaternion(boxes[n2].base[2], quaternion).normalize();
+			//boxes[n2].base[0] = RandomMove::rotateByEulerAngles(boxes[n2].base[0], eulerAngles).normalize();
+			//boxes[n2].base[1] = RandomMove::rotateByEulerAngles(boxes[n2].base[1], eulerAngles).normalize();
+			//boxes[n2].base[2] = RandomMove::rotateByEulerAngles(boxes[n2].base[2], eulerAngles).normalize();
 
 			boxes[n2].updateEdges();
 			acceptedRotations++;
@@ -242,12 +265,12 @@ int main()
 
 		if((t%LOGINTERVALL == 0) && (t != TIMESTEPS))
 		{
-			double currS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
-			cout << std::left <<  "S = " << std::setw(12) << currS
-			 	<< "ΔS = " << std::setw(13) << currS-prevS
+    	auto [ currS, currB ] = Statistics::orderParameter(boxes, N);
+			cout << std::left <<  "S = " << std::setw(12) << currS[0]
+			 	<< "ΔS = " << std::setw(13) << (currS-prevS)[0]
 				<< "T% = " << std::setw(9) << double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100
 				<< "R% = " << std::setw(9) << double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100 << endl;
-			writeStateToFile(fileOut, t, currS, currS-prevS,
+			writeStateToFile(fileOut, t, currS, currB, currS-prevS,
 				double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
 				double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 			prevS = currS;
@@ -256,8 +279,8 @@ int main()
 	auto stop = chrono::high_resolution_clock::now();
 	auto duration = chrono::duration_cast<chrono::seconds>(stop - start);
 
-	double currS = Statistics::orderParameter(boxes, N, relevantBaseIndex);
-	writeStateToFile(fileOut, TIMESTEPS, currS, currS-prevS,
+	auto [ currS, currB ] = Statistics::orderParameter(boxes, N);
+	writeStateToFile(fileOut, TIMESTEPS, currS, currB, currS-prevS,
 		double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
 		double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 	cout << endl;
