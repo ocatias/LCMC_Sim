@@ -29,7 +29,7 @@ class box {
 		void printEdges();
 
 		void translate(vector3d translation);
-		tuple<vector3d, vector3d, vector3d> getScaledBase() {return make_tuple(base[0]*halfRatio[0], base[1]*halfRatio[1], base[2]*halfRatio[2]);}
+		tuple<vector3d, vector3d, vector3d> getScaledBase() {checkBase(); return make_tuple(base[0]*halfRatio[0], base[1]*halfRatio[1], base[2]*halfRatio[2]);}
 };
 
 #endif

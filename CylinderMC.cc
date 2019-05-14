@@ -21,8 +21,8 @@ int N;
 unsigned long long TIMESTEPS = 10000000000;
 unsigned long long LOGINTERVALL = TIMESTEPS/30;
 const double DELTA_X = 0.3;
-const double DELTA_ANGLE = 0.0000001;
-const int UPDATEINTERVALL = 10000000;
+const double DELTA_ANGLE = 1;
+const int UPDATEINTERVALL = 1000000;
 
 const double R = 45;
 const double H = 15;
@@ -39,7 +39,7 @@ int acceptedRotations = 0;
 int deniedRotations = 0;
 box *boxes;
 
-void writeStateToFile(ostream &file, int timestep = 0, valarray<double> S = {0, 0, 0}, valarray<double> B = {0, 0, 0}, valarray<double> deltaS = {0, 0, 0}, double acceptedT = 0, double acceptedR = 0)
+void writeStateToFile(ostream &file, unsigned long long timestep = 0, valarray<double> S = {0, 0, 0}, valarray<double> B = {0, 0, 0}, valarray<double> deltaS = {0, 0, 0}, double acceptedT = 0, double acceptedR = 0)
 {
 	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S[0] << ", " << S[1] << ", " << S[2] << ", " << B[0] << ", " << B[1] << ", " << B[2] <<  ", " << deltaS[0] << ", " << deltaS[1] << ", " << deltaS[2] << ", ";
 	file << acceptedT << ", " << acceptedR << endl;
@@ -149,12 +149,14 @@ int main(int argc, char** argv)
 		fileName = argv[1] + to_string(j);
 		j++;
 	}
-	fileOut.open ("Output/"+fileName+".txt");
+	fileOut.open("Output/"+fileName+".txt");
 
 	N = stoi(argv[2]);
 	boxes = new box[N];
 
-	fileOut << N << ", " << relevantBaseIndex << endl;
+	double density =  N*w*l*h/(R*R*H*M_PI)*100.0;
+
+	fileOut << N << ", " << relevantBaseIndex << ", " << density << endl;
 
 	vector3d zeroVec(0, 0, 0);
 	vector3d up(0, 0, 1);
@@ -163,7 +165,7 @@ int main(int argc, char** argv)
 
 	int counter = 0;
 	cout << "Cylinder:  R = " << R << ", H = " << H << ", V = " << R*R*M_PI << endl;
-	cout << "Density " << N*w*l*h/(R*R*H*M_PI)*100.0 << "%" << endl;
+	cout << "Density " << density << "%" << endl;
 
 	cout << "Placing " << N << " particles:" << endl;
 	int i {0};
@@ -171,6 +173,7 @@ int main(int argc, char** argv)
 	{
 
 /*
+		//Completely random positions
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
 		double x {cos(phi)*radius};
@@ -185,11 +188,25 @@ int main(int argc, char** argv)
 */
 
 
+		//Upright particles
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
 		double x {cos(phi)*radius};
 		double z {sin(phi)*radius};
 		box newBox (zeroVec + right*x + up*z, w/2, l/2, h/2, right, forward, up);
+
+/*
+		//Lying particles
+		double phi {RandomMove::randf()*2*M_PI};
+		double radius {RandomMove::randf()*R};
+		double x {cos(phi)*radius};
+		double z {sin(phi)*radius};
+		double y {(RandomMove::randf() - 0.5) * H};
+		int maxParticlesOnTop = H/(h+0.00001) - 1;
+		box newBox (zeroVec + (-H/2. + (h+0.00001)*(rand() % maxParticlesOnTop))*forward +right*x + up*z, w/2, l/2, h/2, up, right, forward);
+
+*/
+
 
 
 		bool isAllowed = true;
@@ -211,10 +228,10 @@ int main(int argc, char** argv)
 
 	writeStateToFile(fileOut, 0, prevS, _currB, {0,0,0});
 
-	int currAcceptedTranslations = 0;
-	int currAcceptedRotations = 0;
-	int currDeniedTranslations = 0;
-	int currDeniedRotations = 0;
+	unsigned long long currAcceptedTranslations = 0;
+	unsigned long long currAcceptedRotations = 0;
+	unsigned long long currDeniedTranslations = 0;
+	unsigned long long currDeniedRotations = 0;
 
 	auto start = chrono::high_resolution_clock::now();
 	cout << flush << endl << "Starting MC with " << TIMESTEPS << " steps:" << endl;
@@ -224,7 +241,7 @@ int main(int argc, char** argv)
 	{
 		if(t%UPDATEINTERVALL == 0)
 		{
-			cout << "% "<< float(t)/TIMESTEPS*100 << flush <<"\r" << "                  " << "\r";
+			cout << "% "<< static_cast<long double>(t)/TIMESTEPS*100 << flush <<"\r" << "                  " << "\r";
 		}
 
 		int n = rand() % (N);
@@ -268,11 +285,11 @@ int main(int argc, char** argv)
     	auto [ currS, currB ] = Statistics::orderParameter(boxes, N);
 			cout << std::left <<  "S = " << std::setw(12) << currS[0]
 			 	<< "ΔS = " << std::setw(13) << (currS-prevS)[0]
-				<< "T% = " << std::setw(9) << double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100
-				<< "R% = " << std::setw(9) << double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100 << endl;
+				<< "T% = " << std::setw(9) << static_cast<long double>(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100
+				<< "R% = " << std::setw(9) << static_cast<long double>(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100 << endl;
 			writeStateToFile(fileOut, t, currS, currB, currS-prevS,
-				double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
-				double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
+				static_cast<long double>(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
+				static_cast<long double>(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 			prevS = currS;
 		}
 	}
@@ -281,12 +298,12 @@ int main(int argc, char** argv)
 
 	auto [ currS, currB ] = Statistics::orderParameter(boxes, N);
 	writeStateToFile(fileOut, TIMESTEPS, currS, currB, currS-prevS,
-		double(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
-		double(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
+		static_cast<long double>(currAcceptedTranslations)/(currAcceptedTranslations + currDeniedTranslations)*100,
+		static_cast<long double>(currAcceptedRotations)/(currAcceptedRotations+currDeniedRotations)*100);
 	cout << endl;
 	cout << "Time for MC simulation " << duration.count() << " seconds" << endl;
-	cout << "Accepted Moves: " << float(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
-	cout << "Accepted Rotations: " << float(acceptedRotations)/(acceptedRotations+deniedRotations)*100 << "%" << endl;
+	cout << "Accepted Moves: " << static_cast<long double>(acceptedMoves)/(acceptedMoves+deniedMoves)*100 << "%" << endl;
+	cout << "Accepted Rotations: " << static_cast<long double>(acceptedRotations)/(acceptedRotations+deniedRotations)*100 << "%" << endl;
 
 	//cout << acceptedMoves << "/" << acceptedMoves+deniedMoves << endl;
 	//cout << acceptedRotations << "/" << acceptedRotations+deniedRotations << endl;

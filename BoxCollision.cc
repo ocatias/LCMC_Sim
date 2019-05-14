@@ -16,7 +16,7 @@ bool BoxCollision::checkProjection(vector3d T, vector3d L, vector3d scaledBase1[
 	//<< to_string(scaledBase1) << to_string(scaledBase2)
 	//cout << "In " << T << L << endl;
 	//cout << to_string(abs(T*L)) << ", " << to_string(projection1) << ", " << to_string(projection2) << endl;
-	return abs(T*L) > ((projection1 + projection2) + 0.000001);
+	return abs(T*L) > ((projection1 + projection2) + 0.0000000000001);
 }
 
 //Returns true if the boxes are colliding

@@ -27,6 +27,13 @@ void box::updateEdges()
 
 void box::checkBase()
 {
+	//throw invalid_argument( "Base is not orthogonal" );
+	if ((base[0].length() != 1) || (base[1].length() != 1) || (base[2].length() != 1))
+	{
+		base[0] = base[0].normalize();
+		base[1] = base[1].normalize();
+		base[2] = base[2].normalize();
+	}
 
 	if ((base[0] * base[1] != 0) || (base[1] * base[2] != 0) || (base[2] * base[0] != 0))
 	{
@@ -37,13 +44,7 @@ void box::checkBase()
 		base[2] = base[2] - (base[0]*base[2])*base[0] - (base[1]*base[2])*base[1];
 		base[2] = base[2].normalize();
 	}
-		//throw invalid_argument( "Base is not orthogonal" );
-	if ((base[0].length() != 1) || (base[1].length() != 1) || (base[2].length() != 1))
-	{
-		base[0] = base[0].normalize();
-		base[1] = base[1].normalize();
-		base[2] = base[2].normalize();
-	}
+
 	//if (baseVectors[0]%baseVectors[1] != baseVectors[2])
 	//	throw invalid_argument( "Base is not right handed" );
 }
@@ -76,7 +77,6 @@ box::box()
 
 box::box(vector3d c, vector3d b1, vector3d b2, vector3d b3)
 {
-	//box(c, standardHalfRatio, standardHalfRatio, standardHalfRatio, b1, b2, b3);
 	center = c;
 	halfRatio[0] = standardHalfRatio;
 	halfRatio[1] = standardHalfRatio;

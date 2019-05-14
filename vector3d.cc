@@ -65,7 +65,7 @@ double vector3d::operator[](int i)
 
 bool operator==(const vector3d& lhs, const vector3d& rhs)
 {
-	double epsilon = 0.00001;
+	double epsilon = 0.00000001;
 
 	return (abs(lhs.x - rhs.x) <= epsilon) && (abs(lhs.y - rhs.y) <= epsilon) && (abs(lhs.z - rhs.z) <= epsilon);
 }

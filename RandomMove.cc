@@ -8,24 +8,44 @@ double RandomMove::randf()
 
 tuple<double, double, double, double> RandomMove::randomQuaternion(double delta)
 {
-	//if(delta > 1)
-	//	delta = 1;
+	if(delta > 1)
+		delta = 1;
 
-	/*
-	std::random_device rd{};
-  std::mt19937 gen{rd()};
+	if(delta == 1)
+	{
+		std::random_device rd{};
+		std::mt19937 gen{rd()};
 
-    // values near the mean are the most likely
-    // standard deviation affects the dispersion of generated values from the mean
-  std::normal_distribution<> d{0,1};
- 	double x = d(gen);
-	double y = d(gen);
-	double z = d(gen);
-	double w = d(gen);
-	double l = sqrt(w*w + x*x + y*y + z*z);
-	return make_tuple(w/l, x/l, y/l, z/l);
-	*/
+		std::normal_distribution<> d{0,1};
+		double x = d(gen);
+		double y = d(gen);
+		double z = d(gen);
+		double w = d(gen);
+		double l = sqrt(w*w + x*x + y*y + z*z);
+		return make_tuple(w/l, x/l, y/l, z/l);
+	}
+	else
+	{
+		double x,y,z;
+		do {
+			x = (RandomMove::randf() - 0.5)*2;
+			y = (RandomMove::randf() - 0.5)*2;
+			z = (RandomMove::randf() - 0.5)*2;
 
+		} while(sqrt(x*x + y*y + z*z) > 1);
+
+		double length = sqrt(x*x + y*y + z*z);
+		x /= length;
+		y /= length;
+		z /= length;
+
+		double theta = randf()*M_PI*delta;
+
+		return make_tuple(cos(theta), x*sin(theta), y*sin(theta), z*sin(theta));
+
+	}
+
+/*
 	double s = randf()*delta;
 	double sigma1 = sqrt(1-s);
 	double sigma2 = sqrt(s);
@@ -38,6 +58,20 @@ tuple<double, double, double, double> RandomMove::randomQuaternion(double delta)
 	//cout << w << ", " << x << ", " << y << ", " << z << endl;
 	//cout << "Quaternion size = " << to_string(sqrt(w*w + x*x + y*y + z*z)) << endl;
 	return make_tuple(w, x, y, z);
+*/
+
+/*
+	//WRONG ALGORITHM
+	double z = randf();
+	double theta = 2*M_PI*randf();
+	double r = sqrt(1 - z*z);
+	double omega = M_PI*randf();
+	double a = cos(omega);
+	double b = sin(omega)*cos(theta)*r;
+	double c = sin(omega)*sin(theta)*r;
+	double d = sin(omega)*z;
+	return make_tuple(a,b,c,d);
+*/
 }
 
 //delta is the maximum of each individual rotation in percent
