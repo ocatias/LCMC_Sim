@@ -18,18 +18,28 @@
 using namespace std;
 
 int N;
-unsigned long long TIMESTEPS = 10000000000;
-unsigned long long LOGINTERVALL = TIMESTEPS/30;
-const double DELTA_X = 0.3;
-const double DELTA_ANGLE = 1;
-const int UPDATEINTERVALL = 1000000;
+unsigned long long TIMESTEPS = 5000000000;
+unsigned long long LOGINTERVALL = TIMESTEPS/25;
+const double DELTA_X = 0.1;
+const double DELTA_ANGLE = 0.02;
+//const int UPDATEINTERVALL = 1000000;
+const int UPDATEINTERVALL = 10000;
 
+const double R = 40;
+const double H = 3.5;
+
+double w = 1;
+double l = 12;
+double h = 3;
+
+/*
 const double R = 45;
 const double H = 15;
 
 double w = 5;
 double l = 12;
 double h = 1;
+*/
 
 const int relevantBaseIndex = 1;
 
@@ -187,25 +197,44 @@ int main(int argc, char** argv)
 		newBox.base[2] = RandomMove::rotateByQuaternion(newBox.base[2], quaternion).normalize();
 */
 
-
+/*
 		//Upright particles
 		double phi {RandomMove::randf()*2*M_PI};
 		double radius {RandomMove::randf()*R};
 		double x {cos(phi)*radius};
 		double z {sin(phi)*radius};
 		box newBox (zeroVec + right*x + up*z, w/2, l/2, h/2, right, forward, up);
-
-/*
-		//Lying particles
-		double phi {RandomMove::randf()*2*M_PI};
-		double radius {RandomMove::randf()*R};
-		double x {cos(phi)*radius};
-		double z {sin(phi)*radius};
-		double y {(RandomMove::randf() - 0.5) * H};
-		int maxParticlesOnTop = H/(h+0.00001) - 1;
-		box newBox (zeroVec + (-H/2. + (h+0.00001)*(rand() % maxParticlesOnTop))*forward +right*x + up*z, w/2, l/2, h/2, up, right, forward);
-
 */
+
+		//Lying particles
+		//double phi {RandomMove::randf()*2*M_PI};
+		//double radius {RandomMove::randf()*R};
+		//double x {cos(phi)*radius};
+		//double z {sin(phi)*radius};
+		int maxParticlesOnTop = H/(h+0.1);
+		int xParticles = 2*R/(w+0.3);
+		//int yParticles = 2*R/(h+0.0001);
+
+		//cout << -H/2 + h/2 + 0.01 + (h+0.01)*(int(RandomMove::randf()*maxParticlesOnTop)  % (maxParticlesOnTop+1)) << endl;
+		double yDis = (H - 0.1 - maxParticlesOnTop*h)/(maxParticlesOnTop+1);
+		double y = -H/2 +yDis + h/2 + 0.1 + (h+0.1+yDis)*(int(RandomMove::randf()*maxParticlesOnTop)  % (maxParticlesOnTop+1));
+		double x = -R + (w+0.3)*(int(RandomMove::randf()*xParticles)%(xParticles+1)) ;
+		double phi = acos(x/R);
+		double zLength = R*sin(phi);
+		//cout << zLength << endl;
+		int zParticles = 2*(zLength - 1)/(l + 0.1);
+		if (zParticles <= 0)
+			continue;
+
+		double zDis = (2*(zLength) -1 - 0.1 - zParticles*l)/(zParticles+1);
+		double z = zLength - l/2 - 0.5 - zDis -(l+0.1+zDis)*(int(RandomMove::randf()*zParticles)%(zParticles+1)) ;
+
+
+		//cout << maxParticlesOnTop << endl;
+		//cout <<(h+0.00001)*(int((RandomMove::randf()-0.5)*maxParticlesOnTop)  % maxParticlesOnTop)<< endl << endl;
+		box newBox (zeroVec + y*forward + x*right + up*z, w/2, l/2, h/2, right, up, forward);
+
+
 
 
 

@@ -13,13 +13,13 @@
 
 using namespace std;
 
-const int N = 1000;
+const int N = 5000;
 
 
 int main()
 {
   ofstream file;
-  file.open("Output/testest.txt");
+  file.open("Output/EVRGauss.txt");
 
   double L = 1;
 
@@ -51,7 +51,7 @@ int main()
 
     tuple<double, double, double, double> quaternion;
     //do {
-      quaternion = RandomMove::randomQuaternion(0.1);
+      quaternion = RandomMove::randomQuaternion(1);
 
     //} while(acos(get<0>(quaternion)) > 0.01);
     output = RandomMove::rotateByQuaternion(e0, quaternion);
