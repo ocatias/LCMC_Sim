@@ -19,20 +19,19 @@ using namespace std;
 
 int N = 1000;
 unsigned long long TIMESTEPS = 2000000000;
-//unsigned long long TIMESTEPS = 100000;
+//unsigned long long TIMESTEPS = 1000000;
 
 unsigned long long LOGINTERVALL = TIMESTEPS/50;
-const double DELTA_X = 0.6;
-const double DELTA_ANGLE = 0.06;
+const double DELTA_X = 0.1;
+const double DELTA_ANGLE = 0.5;
 //const int UPDATEINTERVALL = 1000000;
-const int UPDATEINTERVALL = 100000;
+const int UPDATEINTERVALL = 10000;
 
-const double R = 40;
-const double H = 12;
+const double R = 18;
 
 double w = 1;
-double l = 12;
-double h = 5;
+double l = 20;
+double h = 1;
 
 /*
 const double R = 45;
@@ -53,7 +52,7 @@ box *boxes;
 
 void writeStateToFile(ostream &file, unsigned long long timestep = 0, valarray<double> S = {0, 0, 0}, valarray<double> B = {0, 0, 0}, valarray<double> deltaS = {0, 0, 0}, double acceptedT = 0, double acceptedR = 0)
 {
-	file << "cylinder, " << R << ", " << H << ", " << timestep << ", " << S[0] << ", " << S[1] << ", " << S[2] << ", " << B[0] << ", " << B[1] << ", " << B[2] <<  ", " << deltaS[0] << ", " << deltaS[1] << ", " << deltaS[2] << ", ";
+	file << "sphere, " << R << ", " << R << ", " << timestep << ", " << S[0] << ", " << S[1] << ", " << S[2] << ", " << B[0] << ", " << B[1] << ", " << B[2] <<  ", " << deltaS[0] << ", " << deltaS[1] << ", " << deltaS[2] << ", ";
 	file << acceptedT << ", " << acceptedR << endl;
 	for( int i = 0; i <= N-1; i++)
 	{
@@ -66,8 +65,8 @@ bool isOutsideCylinder(box particle)
 	particle.updateEdges();
 	for(int i = 0; i < 8; i++)
 	{
-		if(sqrt(particle.edges[i].x*particle.edges[i].x + particle.edges[i].z*particle.edges[i].z) > R
-		|| abs(particle.edges[i].y) > H/2)
+		if(sqrt(particle.edges[i].x*particle.edges[i].x + particle.edges[i].y*particle.edges[i].y + particle.edges[i].z*particle.edges[i].z) > R
+			||  particle.edges[i].y < 0)
 			return true;
 	}
 	return false;
@@ -82,11 +81,13 @@ bool tryMove(int particleNr, vector3d translationVector)
 	if(isOutsideCylinder(trialBox))
 		return false;
 
+/*
 	for(int i = 0; i < 8; i++)
 	{
 		if(trialBox.edges[i].y > H/2 || trialBox.edges[i].y < -H/2)
 			cout << "ERROR";
 	}
+*/
 
 	for(int i = 0; i < N; i++)
 	{
@@ -163,19 +164,23 @@ int main(int argc, char** argv)
 	}
 	fileOut.open("Output/"+fileName+".txt");
 
+
+
 	if(argc > 1)
 	{
 		l = stof(argv[2]);
 		h = stof(argv[3]);
+		w = stof(argv[4]);
 
-		float density = stof(argv[4]);
-		N = density*(R*R*H*M_PI)/(w*l*h);
+		float density = stof(argv[5]);
+		N = density*(R*R*R*4/3*M_PI/2)/(w*l*h);
 		cout << "Using input parameters: w = " << w << ", l = " << l << ", h = " << h << ", N = " << N << endl;
 	}
 
+
 	boxes = new box[N];
 
-	double density =  N*w*l*h/(R*R*H*M_PI)*100.0;
+	double density =  N*w*l*h/(R*R*R*4/3*M_PI/2)*100.0;
 
 	fileOut << N << ", " << relevantBaseIndex << ", " << density << endl;
 
@@ -185,7 +190,7 @@ int main(int argc, char** argv)
 	vector3d right(1, 0, 0);
 
 	int counter = 0;
-	cout << "Cylinder:  R = " << R << ", H = " << H << ", V = " << R*R*M_PI << endl;
+	cout << "Cylinder:  R = " << R << ", H = " << R << ", V = " << R*R*R*4/3*M_PI << endl;
 	cout << "Density " << density << "%" << endl;
 
 	cout << "Placing " << N << " particles:" << endl;
@@ -218,40 +223,29 @@ int main(int argc, char** argv)
 */
 
 		//Lying particles
-		//double phi {RandomMove::randf()*2*M_PI};
-		//double radius {RandomMove::randf()*R};
-		//double x {cos(phi)*radius};
-		//double z {sin(phi)*radius};
-		//int maxParticlesOnTop = H/(h+0.1);
-		int maxParticlesOnTop = H/h;
+		int maxParticlesY = R/h;
 
-		int xParticles = 2*R/(w+0.3);
-		//int yParticles = 2*R/(h+0.0001);
+		double yDis = (2*R - maxParticlesY*h)/(maxParticlesY+1);
+		double y = 0 +yDis + h/2 + (h+yDis)*(int(RandomMove::randf()*maxParticlesY)  % (maxParticlesY+1));
 
-		//cout << -H/2 + h/2 + 0.01 + (h+0.01)*(int(RandomMove::randf()*maxParticlesOnTop)  % (maxParticlesOnTop+1)) << endl;
-		//double yDis = (H - 0.1 - maxParticlesOnTop*h)/(maxParticlesOnTop+1);
-		//double y = -H/2 +yDis + h/2 + 0.1 + (h+0.1+yDis)*(int(RandomMove::randf()*maxParticlesOnTop)  % (maxParticlesOnTop+1));
-		double yDis = (H - maxParticlesOnTop*h)/(maxParticlesOnTop+1);
-		double y = -H/2 +yDis + h/2 + (h+yDis)*(int(RandomMove::randf()*maxParticlesOnTop)  % (maxParticlesOnTop+1));
-
-		double x = -R + (w+0.3)*(int(RandomMove::randf()*xParticles)%(xParticles+1)) ;
-		double phi = acos(x/R);
-		double zLength = R*sin(phi);
+		double phi = acos(y/R);
+		double length = R*sin(phi);
 		//cout << zLength << endl;
-		int zParticles = 2*(zLength - 1)/(l + 0.1);
-		if (zParticles <= 0)
+		int maxParticlesX = 2*(length)/(w + 0.01);
+		int maxParticlesZ = 2*(length)/(l + 0.01);
+
+		if ((maxParticlesX <= 0) || (maxParticlesZ <= 0))
 			continue;
 
-		double zDis = (2*(zLength) -1 - 0.1 - zParticles*l)/(zParticles+1);
-		double z = zLength - l/2 - 0.5 - zDis -(l+0.1+zDis)*(int(RandomMove::randf()*zParticles)%(zParticles+1)) ;
+		double xDis = (2*(length) - 0.01 - maxParticlesX*w)/(maxParticlesX+1);
+		double zDis = (2*(length) - 0.01 - maxParticlesZ*l)/(maxParticlesZ+1);
+		double x = length - w/2 - zDis -(w+0.01+xDis)*(int(RandomMove::randf()*maxParticlesX)%(maxParticlesX+1)) ;
+		double z = length - l/2 - zDis -(l+0.01+zDis)*(int(RandomMove::randf()*maxParticlesZ)%(maxParticlesZ+1)) ;
+
+		box newBox (zeroVec + y*forward + x*right + up*z, w/2, l/2, h/2, right, forward, up);
 
 
-		//cout << maxParticlesOnTop << endl;
-		//cout <<(h+0.00001)*(int((RandomMove::randf()-0.5)*maxParticlesOnTop)  % maxParticlesOnTop)<< endl << endl;
-		box newBox (zeroVec + y*forward + x*right + up*z, w/2, l/2, h/2, right, up, forward);
-
-
-
+		//cout << x << " " << y << " " << z << endl;
 
 
 		bool isAllowed = true;
