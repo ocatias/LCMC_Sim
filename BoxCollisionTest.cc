@@ -44,7 +44,7 @@ srand(22);
   auto start = chrono::high_resolution_clock::now();
 
   ofstream file, fileCenter, fileRotation;
-  file.open("Output/excludedVolume.txt");
+  file.open("Output/excludedVolume2.txt");
   //fileCenter.open("Output/excludedVolumeCenter.txt");
   //fileRotation.open("Output/excludedVolumeRotations.txt");
 

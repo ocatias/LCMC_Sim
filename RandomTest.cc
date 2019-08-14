@@ -19,7 +19,7 @@ const int N = 5000;
 int main()
 {
   ofstream file;
-  file.open("Output/EVRGauss.txt");
+  file.open("Output/EVRGauss2.txt");
 
   double L = 1;
 

@@ -31,8 +31,8 @@ const double R = 40;
 const double H = 12;
 
 double w = 1;
-double l = 12;
-double h = 5;
+double l = 20;
+double h = 3;
 
 /*
 const double R = 45;

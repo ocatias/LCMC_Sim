@@ -22,12 +22,13 @@ unsigned long long TIMESTEPS = 2000000000;
 //unsigned long long TIMESTEPS = 1000000;
 
 unsigned long long LOGINTERVALL = TIMESTEPS/50;
-const double DELTA_X = 0.1;
-const double DELTA_ANGLE = 0.5;
-//const int UPDATEINTERVALL = 1000000;
-const int UPDATEINTERVALL = 10000;
+const double DELTA_X = 0.2;
+const double DELTA_ANGLE = 0.1;
 
-const double R = 18;
+const int UPDATEINTERVALL = 1000000;
+//const int UPDATEINTERVALL = 10000;
+
+const double R = 12;
 
 double w = 1;
 double l = 20;
@@ -168,9 +169,9 @@ int main(int argc, char** argv)
 
 	if(argc > 1)
 	{
-		l = stof(argv[2]);
-		h = stof(argv[3]);
-		w = stof(argv[4]);
+		w = stof(argv[2]);
+		l = stof(argv[3]);
+		h = stof(argv[4]);
 
 		float density = stof(argv[5]);
 		N = density*(R*R*R*4/3*M_PI/2)/(w*l*h);
@@ -225,7 +226,7 @@ int main(int argc, char** argv)
 		//Lying particles
 		int maxParticlesY = R/h;
 
-		double yDis = (2*R - maxParticlesY*h)/(maxParticlesY+1);
+		double yDis = (R - maxParticlesY*h)/(maxParticlesY+1);
 		double y = 0 +yDis + h/2 + (h+yDis)*(int(RandomMove::randf()*maxParticlesY)  % (maxParticlesY+1));
 
 		double phi = acos(y/R);
