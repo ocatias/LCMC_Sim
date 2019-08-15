@@ -1,0 +1,22 @@
+g++ -std=c++1z test1.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc RandomMove.h RandomMove.cc -o a.out
+
+g++ -std=c++1z CylinderMC.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc RandomMove.h RandomMove.cc Statistics.h Statistics.cc -o lcmcsim.out
+
+g++ -std=c++1z HalfSphere.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc RandomMove.h RandomMove.cc Statistics.h Statistics.cc -o s.out
+
+g++ -std=c++1z vector3dTest.cc vector3d.h vector3d.cc -o a.out
+
+g++ -std=c++1z BoxCollisionTest.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc BoxCollision2.h BoxCollision2.cc RandomMove.h RandomMove.cc -o t.out
+
+g++ -std=c++1z SphereExcludedVolume.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc BoxCollision2.h BoxCollision2.cc RandomMove.h RandomMove.cc -o t.out
+
+g++ -std=c++1z RandomTest.cc vector3d.h vector3d.cc box.h box.cc BoxCollision.h BoxCollision.cc RandomMove.h RandomMove.cc Statistics.h Statistics.cc -o test.out
+
+nohup ./lcmcsim.out bigC_D500 3181  > nohup_D50.out &
+
+set yrange[0:1]; plot 'results' using 1:2 with linespoints pointtype 5 lt rgb "blue", '' using 1:3 with linespoints pointtype 5 lt rgb "black", '' using 1:4 with linespoints pointtype 5 lt rgb "red", '' using 1:5 with linespoints pointtype 5 lt rgb "green"
+
+set xzeroaxis; plot 'excludedVolume.txt' using 1:2 with linespoints
+
+
+./a.out
