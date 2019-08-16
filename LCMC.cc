@@ -17,14 +17,19 @@
 
 using namespace std;
 
-int N = 1000;
+//Number of timesteps
 unsigned long long TIMESTEPS = 200000;
+
 
 const double DELTA_X = 0.6;
 const double DELTA_ANGLE = 0.06;
 
-unsigned long long LOGINTERVALL = TIMESTEPS/50;
+//How many different frames of the simulation will be saved
+unsigned long long LOGINTERVALL = TIMESTEPS/10;
+//After how many timesteps the progress-counter will be updated
 const int UPDATEINTERVALL = 100000;
+
+const int relevantBaseIndex = 1;
 
 double R = 19;
 double H = 9;
@@ -35,12 +40,11 @@ double h = 3;
 
 double volume;
 
-const int relevantBaseIndex = 1;
-
 int acceptedMoves = 0;
 int deniedMoves = 0;
 int acceptedRotations = 0;
 int deniedRotations = 0;
+int N = 1000;
 
 string confinementName = "cylinder";
 
@@ -349,11 +353,11 @@ bool tryRotate(int particleNr, tuple<double, double, double, double> quaternion)
 int main(int argc, char** argv)
 {
 	srand(3);
-	ofstream fileOut;
 
+	//Creating the output file
+	ofstream fileOut;
 	string fileName = argv[1];
 	int j = 2;
-
 	while(FILE *file = fopen(("Output/"+fileName+".txt").c_str(), "r"))
 	{
 		fclose(file);
@@ -362,7 +366,11 @@ int main(int argc, char** argv)
 	}
 	fileOut.open("Output/"+fileName+".txt");
 
+	l = stof(argv[2]);
+	h = stof(argv[3]);
+	float density = stof(argv[4]);
 
+	//Confinement selection
   switch (stoi(argv[5]))
   {
     //Cylinder
@@ -373,6 +381,7 @@ int main(int argc, char** argv)
       volume = R*R*M_PI*H;
       initializeParticles = initializeParticlesCylinder;
       confinementName = "cylinder";
+			cout << "Cylinder:  R = " << R << ", H = " << H << ", V = " << volume << endl;
       break;
 
     //Cube
@@ -383,6 +392,7 @@ int main(int argc, char** argv)
       volume = H*H*H;
       initializeParticles = initializeParticlesCube;
       confinementName = "cube";
+			cout << "Cube:  L = " << R << ", V = " << volume << endl;
       break;
 
     //Sphere
@@ -392,6 +402,7 @@ int main(int argc, char** argv)
       volume = R*R*R*4./3*M_PI;
       initializeParticles = initializeParticlesSphere;
       confinementName = "sphere";
+			cout << "Sphere:  R = " << R << ", V = " << volume << endl;
       break;
 
     //Half Sphere
@@ -401,15 +412,12 @@ int main(int argc, char** argv)
       volume = R*R*R*2./3*M_PI;
       initializeParticles = initializeParticlesSphere;
       confinementName = "sphere";
+			cout << "Half Sphere:  R = " << R << ", V = " << volume << endl;
       break;
   }
 
-	l = stof(argv[2]);
-	h = stof(argv[3]);
-
-	float density = stof(argv[4]);
 	N = density*volume/(w*l*h);
-	cout << "Using input parameters: w = " << w << ", l = " << l << ", h = " << h << ", N = " << N << endl;
+	cout << "Input parameters: w = " << w << ", l = " << l << ", h = " << h << ", N = " << N << endl;
 
 	boxes = new box[N];
 
@@ -418,9 +426,7 @@ int main(int argc, char** argv)
 	fileOut << N << ", " << relevantBaseIndex << ", " << actual_density << endl;
 
 	int counter = 0;
-	cout << "Cylinder:  R = " << R << ", H = " << H << ", V = " << R*R*M_PI << endl;
 	cout << "Density " << actual_density << "%" << endl;
-
 	cout << "Placing " << N << " particles:" << endl;
 
   initializeParticlesCylinder(N);
@@ -504,7 +510,6 @@ int main(int argc, char** argv)
 
 	fileOut.close();
 	return 0;
-
 }
 
 #endif
