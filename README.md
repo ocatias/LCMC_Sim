@@ -37,10 +37,13 @@ For example the following command starts a simulation inside a cylinder with rad
 If you want to take a look at your simulation results, you can use [this](https://github.com/ocatias/LCMC_Vis) program.
 
 ### Examples
-![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/Sim_Screenshot1.png)
-![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/rod1d16_1.resized.jpg) ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/rod2d20_1.resized.jpg) ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/rod1d25_1.resized.jpg) 
-![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/lyingN400_2.resized.jpg) ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/hs_side01.resized.jpg) ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/sphere002.resized.jpg) 
- ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/COG.resized.png/) ![](/home/fabian/Documents/Physik/BA/LCMC_Sim/Pictures/OrderParamater1.resized.png)
+![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/Sim_Screenshot1.png)
+
+![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/rod1d16_1.resized.jpg) ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/rod2d20_1.resized.jpg) ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/rod1d25_1.resized.jpg)
+
+![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/lyingN400_2.resized.jpg) ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/hs_side01.resized.jpg) ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/sphere002.resized.jpg)
+
+ ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/OrderParamater1.resized.png) ![](https://github.com/ocatias/LCMC_Sim/blob/master/Pictures/COG.resized.png)
 
 
 
