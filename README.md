@@ -21,7 +21,8 @@ You can then start a simulation with
 * confinement_geometry: A number that corresponds to the confinement
 * confinement_paramater: Parameters that define the size of your confinement
 
-The possibilietes for confinements and their parameters are:
+The possibilities for confinements and their parameters are:
+
 0. **Cylinder** (radius, height)
 1. **Cube** (length)
 3. **Sphere** (radius)
